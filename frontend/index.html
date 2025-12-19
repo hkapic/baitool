@@ -54,20 +54,41 @@
 </div>
 
 <script>
-  function send() {
+  async function send() {
     const input = document.getElementById("input");
     const messages = document.getElementById("messages");
+    const text = input.value.trim();
 
-    if (input.value.trim() === "") return;
+    if (text === "") return;
 
-    messages.innerHTML += `<div class="user">${input.value}</div>`;
-    messages.innerHTML += `<div class="bot">✅ This response is school-safe and filtered.</div>`;
-
+    messages.innerHTML += `<div class="user">${text}</div>`;
     input.value = "";
+
+    try {
+      const response = await fetch("http://localhost:8000/ask", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ text })
+      });
+
+      const data = await response.json();
+
+      if (data.status === "ok") {
+        messages.innerHTML += `<div class="bot">${data.response}</div>`;
+      } else {
+        messages.innerHTML += `<div class="bot" style="color:red;">${data.response}</div>`;
+      }
+    } catch (error) {
+      messages.innerHTML += `
+        <div class="bot" style="color:red;">
+          ⚠️ Backend not running. Please contact admin.
+        </div>`;
+    }
+
     messages.scrollTop = messages.scrollHeight;
   }
 </script>
 
-</body>
-</html>
-
+  
